@@ -1,11 +1,10 @@
 <ActionBar title="NativeScript AR"></ActionBar>
 <StackLayout>
-  <Button text="getPos" (tap)="foundimage()"></Button>
+  <Button text="getPos" (tap)="getObjectPos()"></Button>
   <Button text="createBoxes" (tap)="createBoxes()"></Button>
-  <Button text="currentPos" (tap)="getCurrentPos()"></Button>
-  <GridLayout rows="" columns="">
+  <Button text="currentPos" (tap)="getDevicePos()"></Button>
+  <GridLayout>
     <AR
-    row="1"
     (arLoaded)="arLoaded($event)"
     trackingMode="IMAGE"
     [showStatistics]="true"
