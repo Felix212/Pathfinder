@@ -3,7 +3,6 @@
 	package="__PACKAGE__"
 	android:versionCode="1"
 	android:versionName="1.0">
-
 	<supports-screens
 		android:smallScreens="true"
 		android:normalScreens="true"
@@ -27,7 +26,7 @@
 			android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|locale|uiMode"
 			android:theme="@style/LaunchScreenTheme">
 
-			<meta-data android:name="SET_THEME_ON_LAUNCH" android:resource="@style/AppTheme" />
+			<meta-data android:name="SET_THEME_ON_LAUNCH" android:resource="@style/AppTheme"  />
 
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />

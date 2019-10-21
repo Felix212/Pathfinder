@@ -4,7 +4,7 @@ import { NativeScriptModule } from "nativescript-angular/nativescript.module";
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { CameraComponent } from './camera/camera.component';
-
+import { Color } from 'tns-core-modules/color/color';
 @NgModule({
    bootstrap: [
       AppComponent

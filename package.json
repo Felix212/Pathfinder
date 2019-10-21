@@ -26,6 +26,7 @@
     "dom-to-image": "^2.6.0",
     "html-to-image": "^0.1.1",
     "nativescript-angular": "~8.2.0",
+    "nativescript-ar": "^1.0.2",
     "nativescript-screenshot": "0.0.2",
     "nativescript-theme-core": "~1.0.6",
     "reflect-metadata": "~0.1.12",
