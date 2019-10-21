@@ -1,12 +1,23 @@
 <ActionBar title="NativeScript AR"></ActionBar>
+<StackLayout>
+  <Button text="getPos" (tap)="foundimage()"></Button>
+  <Button text="createBoxes" (tap)="createBoxes()"></Button>
+  <Button text="currentPos" (tap)="getCurrentPos()"></Button>
+  <GridLayout rows="" columns="">
+    <AR
+    row="1"
+    (arLoaded)="arLoaded($event)"
+    trackingMode="IMAGE"
+    [showStatistics]="true"
+    trackingImagesBundle="TrackingImages"
+    (trackingImageDetected)="imageDetected($event)"
+    >
+</AR>
+  </GridLayout>
 
-<GridLayout class="page">
+</StackLayout>
 
-  <AR
-        trackingMode="WORLD"
-        debugLevel="FEATURE_POINTS"
-        planeDetection="HORIZONTAL"
-        (planeTapped)="planeTapped($event)">
-    </AR>
 
-</GridLayout>
+
+
+
