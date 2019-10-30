@@ -48,7 +48,8 @@ import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
  */
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();
-
+  // Create RobotNavigator
+  private static RobotNavigator navigator = new RobotNavigator();
   // Configuration values for the prepackaged SSD model.
   private static final int TF_OD_API_INPUT_SIZE = 300;
   private static final boolean TF_OD_API_IS_QUANTIZED = true;
