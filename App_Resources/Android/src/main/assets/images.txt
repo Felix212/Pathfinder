@@ -1,4 +1,0 @@
-ryzen|ryzen.jpg|0.1
-ryzen2|ryzen2.jpg|0.1
-ryzen3|ryzen3.jpg|0.1
-ryzen4|ryzen4.png|0.1
