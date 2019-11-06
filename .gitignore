@@ -9,6 +9,7 @@
 /captures
 .externalNativeBuild
 local.properties
-
+*/build/
 /.gradle/
 /.idea/
+.gradle/buildOutputCleanup/
