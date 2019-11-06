@@ -12,16 +12,17 @@ import geist.re.mindlib.events.TouchStateEvent;
 import geist.re.mindlib.exceptions.SensorDisconnectedException;
 import geist.re.mindlib.hardware.Sensor;
 import geist.re.mindlib.listeners.TouchSensorListener;
-
-public class RobotNavigator extends RobotControlActivity implements View.OnClickListener  {
-
-    private static final Logger LOGGER = new Logger();
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 
 import geist.re.mindlib.RobotControlActivity;
 import geist.re.mindlib.RobotService;
+
+public class RobotNavigator extends RobotControlActivity implements View.OnClickListener  {
+
+    private static final Logger LOGGER = new Logger();
+
 
     private static final String TAG = "ControlApp";
     private static final String ROBOT_NAME = "SpoReiJo";
