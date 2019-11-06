@@ -1,39 +1,46 @@
 package org.tensorflow.lite.examples.detection;
+import org.tensorflow.lite.examples.detection.env.Logger;
+import android.view.View;
 
 
-import geist.re.mindlib.RobotControlActivity;
 
-public class RobotNavigator extends RobotControlActivity {
+import geist.re.mindlib.RobotService;
+
+
+public class RobotNavigator implements View.OnClickListener {
     private static final String TAG = "ControlApp";
-    private static final String ROBOT_NAME = "02Bolek";
+    private static final String ROBOT_NAME = "SpoReiJo";
+    RobotService robot = new RobotService();
 
-    @Override
-    protected void onRobotServiceConnected() {
+    private static final Logger LOGGER = new Logger();
 
-    }
-
-    @Override
-    protected void onStartListeningForVoiceCommands() {
-
-    }
-
-    @Override
-    protected void onStartListeningForVoiceWakeup() {
+    public void connect(){
+        if(robot.getConnectionState() != RobotService.CONN_STATE_CONNECTED &&
+                robot.getConnectionState() != RobotService.CONN_STATE_CONNECTING) {
+            robot.connectToRobot(ROBOT_NAME);
+        }
 
     }
 
-    @Override
-    protected void onRobotDisconnected() {
-
+    public void forward(){
+        robot.executeSyncTwoMotorTask(robot.motorA.run(30),robot.motorB.run(30));
     }
 
     @Override
-    protected void onRobotConnected() {
-
-    }
-
-    @Override
-    protected void onGestureCommand(double x, double y, double z) {
-
+    public void onClick(View view) {
+        switch(view.getId()) {
+            case R.id.bntF: LOGGER.i("F");
+                forward(); break;
+            case R.id.bntR: LOGGER.i("R");
+                break;
+            case R.id.bntL: LOGGER.i("L");
+                break;
+            case R.id.bntB: LOGGER.i("B");
+                break;
+            case R.id.bntC: LOGGER.i("Connected");
+                connect(); break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + view.getId());
+        }
     }
 }

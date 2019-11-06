@@ -20,9 +20,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -35,16 +33,19 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import androidx.appcompat.app.*;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
-import edu.cmu.pocketsphinx.RecognitionListener;
+
 import edu.cmu.pocketsphinx.SpeechRecognizer;
 import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 import geist.re.mindlib.exceptions.SensorDisconnectedException;
 
 
 public abstract class RobotControlActivity extends AppCompatActivity implements
-        RecognitionListener,SensorEventListener {
+        SensorEventListener {
     private static final String TAG = "ROBOT";
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 2;
@@ -253,35 +254,11 @@ public abstract class RobotControlActivity extends AppCompatActivity implements
      * keyword spotting mode we can react here, in other modes we need to wait
      * for final result in onResult.
      */
-    @Override
-    public void onPartialResult(Hypothesis hypothesis) {
-        if (hypothesis == null)
-            return;
-
-        String text = hypothesis.getHypstr();
-        Log.d(TAG, "Partial: "+text);
-        if (text.equals(KEYPHRASE_START)) {
-            speakBack("Yes", ROBOT_COMMANDS);
-        }
-    }
 
     /**
      * This callback is called when we stop the recognizer.
      */
-    @Override
-    public void onResult(Hypothesis hypothesis) {
-        if (hypothesis == null){
-            return;
-        }
 
-        final String text = hypothesis.getHypstr();
-        Toast.makeText(RobotControlActivity.this, text, Toast.LENGTH_LONG).show();
-        if(text.equals(KEYPHRASE_START)){
-            return;
-        }
-
-        onVoiceCommand(text);
-    }
 
     protected void startRecognizer(){
         switchSearch(KWS_SEARCH_START);
@@ -300,21 +277,7 @@ public abstract class RobotControlActivity extends AppCompatActivity implements
     }
 
 
-    @Override
-    public void onBeginningOfSpeech() {
-    }
 
-    /**
-     * We stop recognizer here to get a final result
-     */
-    @Override
-    public void onEndOfSpeech() {
-        if (!recognizer.getSearchName().equals(KWS_SEARCH_START)) {
-            //response, and then switch search.
-            //switchSearch(KWS_SEARCH_START);
-            switchSearch(ON_HOLD);
-        }
-    }
 
     private void switchSearch(String searchName) {
         recognizer.stop();
@@ -347,7 +310,7 @@ public abstract class RobotControlActivity extends AppCompatActivity implements
                 .setRawLogDir(assetsDir) // To disable logging of raw audio comment out this call (takes a lot of space on the device)
 
                 .getRecognizer();
-        recognizer.addListener(this);
+
 
         /** In your application you might not need to add all those searches.
          * They are added here for demonstration. You can leave just one.
@@ -361,15 +324,6 @@ public abstract class RobotControlActivity extends AppCompatActivity implements
         recognizer.addGrammarSearch(ROBOT_COMMANDS, robotGrammar);
     }
 
-    @Override
-    public void onError(Exception error) {
-        Log.d(TAG, "Error during voice recognition.");
-    }
-
-    @Override
-    public void onTimeout() {
-        switchSearch(KWS_SEARCH_START);
-    }
 
 
     public void speakBack(String text){

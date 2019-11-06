@@ -26,9 +26,12 @@ import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Size;
 import android.util.TypedValue;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -48,6 +51,7 @@ import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();
   // Create RobotNavigator
+  public RobotNavigator navigator = new RobotNavigator();
   // Configuration values for the prepackaged SSD model.
   private static final int TF_OD_API_INPUT_SIZE = 300;
   private static final boolean TF_OD_API_IS_QUANTIZED = true;
@@ -78,6 +82,22 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private MultiBoxTracker tracker;
 
   private BorderedText borderedText;
+
+  @Override
+  protected void onCreate(final Bundle savedInstanceState) {
+    LOGGER.d("onCreate " + this);
+    super.onCreate(null);
+    Button mClickButton1 = findViewById(R.id.bntF);
+    mClickButton1.setOnClickListener(this.navigator);
+    Button mClickButton2 = findViewById(R.id.bntB);
+    mClickButton2.setOnClickListener(this.navigator);
+    Button mClickButton3 = findViewById(R.id.bntL);
+    mClickButton3.setOnClickListener(this.navigator);
+    Button mClickButton4 = findViewById(R.id.bntR);
+    mClickButton4.setOnClickListener(this.navigator);
+    Button mClickButton5 = findViewById(R.id.bntC);
+    mClickButton5.setOnClickListener(this.navigator);
+  }
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -173,7 +193,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         new Runnable() {
           @Override
           public void run() {
-            //LOGGER.i("Running detection on image " + currTimestamp);
+           // LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
