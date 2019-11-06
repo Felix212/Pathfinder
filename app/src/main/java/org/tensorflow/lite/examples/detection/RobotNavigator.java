@@ -7,6 +7,7 @@ public class RobotNavigator extends RobotControlActivity {
     private static final String TAG = "ControlApp";
     private static final String ROBOT_NAME = "02Bolek";
 
+
     @Override
     protected void onRobotServiceConnected() {
 
