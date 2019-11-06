@@ -151,6 +151,35 @@
                 android:src="@drawable/ic_baseline_add" />
         </LinearLayout>
     </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:id="@+id/bntF"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Forwards" />
+    <Button
+        android:id="@+id/bntB"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Backwards" />
+    <Button
+        android:id="@+id/bntR"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Right" />
+    <Button
+        android:id="@+id/bntL"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Left" />
+    <Button
+        android:id="@+id/bntC"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:text="Connect" />
+        />
 
     <View
         android:layout_width="match_parent"
