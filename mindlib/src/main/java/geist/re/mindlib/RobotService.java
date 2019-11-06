@@ -261,7 +261,7 @@ public class RobotService extends Service {
         }
         Intent intent = new Intent(ROBOT_STATE_NOTIFICATION);
         intent.putExtra(CONNECTION_STATE_CODE, mConnState);
-        sendBroadcast(intent);
+       // sendBroadcast(intent);
 
     }
 
