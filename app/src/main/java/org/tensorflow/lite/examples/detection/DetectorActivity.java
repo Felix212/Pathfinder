@@ -71,7 +71,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
-  private DetectReader imageFeeder = new DetectReader();
+  private DetectReader imageFeeder = new DetectReader(this.navigator);
   private boolean computingDetection = false;
 
   private long timestamp = 0;
@@ -193,7 +193,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         new Runnable() {
           @Override
           public void run() {
-           // LOGGER.i("Running detection on image " + currTimestamp);
+            LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;

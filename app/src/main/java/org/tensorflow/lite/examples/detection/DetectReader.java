@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.ListIterator;
 
 public class DetectReader {
+    private RobotNavigator navigator;
+    public DetectReader(RobotNavigator nav) {
+        this.navigator = nav;
+    }
     private static final Logger LOGGER = new Logger();
     private static int STRAT = 0;
     private static final int FINDCIRCLE = 0;
@@ -77,13 +81,13 @@ public class DetectReader {
         oldLocation = pos;
 
         if(pos.centerX() < 100) {
-            LOGGER.i("GO LEFT");
+            navigator.left();
         }
         if(pos.centerX() > 200) {
-            LOGGER.i("GO RIGHT");
+            navigator.right();
         }
         if(pos.centerX() > 100 && pos.centerX() < 200) {
-            LOGGER.i("GO FORWARD");
+            navigator.forward();
         }
 
         return null;
