@@ -5,14 +5,18 @@ import android.view.View;
 
 
 import geist.re.mindlib.RobotService;
+import geist.re.mindlib.events.LightStateEvent;
 import geist.re.mindlib.events.MotorStateEvent;
+import geist.re.mindlib.exceptions.SensorDisconnectedException;
 import geist.re.mindlib.hardware.Motor;
+import geist.re.mindlib.hardware.Sensor;
+import geist.re.mindlib.listeners.LightSensorListener;
 import geist.re.mindlib.listeners.MotorStateListener;
 
 
 public class RobotNavigator implements View.OnClickListener {
     private static final String TAG = "ControlApp";
-    private static final String ROBOT_NAME = "NXT";
+    private static final String ROBOT_NAME = "SpoReiJo";
     private RobotService robot = new RobotService();
     private MotorStateEvent ASTATE;
     public RobotNavigator() {
@@ -50,13 +54,25 @@ public class RobotNavigator implements View.OnClickListener {
         robot.executeSyncTwoMotorTask(robot.motorA.run(10),robot.motorB.run(15));
     }
     public void backwards() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-15),robot.motorB.run(-15));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-15),robot.motorB.run(15));
+    }
+    private void waitcommand() {
+        while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
+            LOGGER.i("Waiting for command for last command to finish.");
+        }
+    }
+    private void rotate() {
+        robot.executeSyncTwoMotorTask(robot.motorA.run(15, 100), robot.motorB.run(-15, 100));
+    }
+    private void longlenght() {
+
+    }
+    private void shortlenght() {
+
     }
     public void testRoute() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(15, 1000), robot.motorB.run(15, 1000));
-        while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
-            LOGGER.i("FIRST COMMAND");
-        }
+        rotate();
+/*
         robot.executeSyncTwoMotorTask(robot.motorA.run(-15, 1000), robot.motorB.run(-15, 1000));
         while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
             LOGGER.i("SECOND COMMAND");
@@ -69,7 +85,8 @@ public class RobotNavigator implements View.OnClickListener {
         while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
             LOGGER.i("FOURTH COMMAND");
         }
-        /*while(ASTATE.getTachoCount() < 1000) {
+
+        while(ASTATE.getTachoCount() < 1000) {
             LOGGER.i(Integer.toString(ASTATE.getTachoCount()));
         }
 
