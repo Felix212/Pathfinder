@@ -46,4 +46,5 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
     implementation files('libs\\drive-command.jar')
     compile project(path: ':mindlib')
+    implementation project(path: ':openCVLibrary343')
 }
