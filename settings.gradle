@@ -1,1 +1,2 @@
 include ':app', ':tensorflow-lite', ':models', ':mindlib', ':aars'
+include ':openCVLibrary343'
