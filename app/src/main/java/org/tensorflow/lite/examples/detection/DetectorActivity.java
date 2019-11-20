@@ -32,10 +32,13 @@ import android.util.Size;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.opencv.android.OpenCVLoader;
 import org.tensorflow.lite.examples.detection.customview.OverlayView;
 import org.tensorflow.lite.examples.detection.customview.OverlayView.DrawCallback;
 import org.tensorflow.lite.examples.detection.env.BorderedText;
@@ -52,6 +55,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final Logger LOGGER = new Logger();
   // Create RobotNavigator
   public RobotNavigator navigator = new RobotNavigator();
+  public RedlineDetection redlineDetection = new RedlineDetection();
+  public ImageView iv;
   // Configuration values for the prepackaged SSD model.
   private static final int TF_OD_API_INPUT_SIZE = 300;
   private static final boolean TF_OD_API_IS_QUANTIZED = true;
@@ -97,6 +102,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     mClickButton4.setOnClickListener(this.navigator);
     Button mClickButton5 = findViewById(R.id.bntC);
     mClickButton5.setOnClickListener(this.navigator);
+    //
+    iv = findViewById(R.id.openCV);
+    iv.setRotation(90);
   }
 
   @Override
@@ -197,7 +205,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-
+            LOGGER.i(croppedBitmap.getWidth() + " x " + croppedBitmap.getHeight());
+            LOGGER.i(rgbFrameBitmap.getWidth() + " x " + rgbFrameBitmap.getHeight());
+            Bitmap detectred = Bitmap.createBitmap(redlineDetection.processImage(rgbFrameBitmap));
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
             final Paint paint = new Paint();
@@ -242,6 +252,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     showFrameInfo(previewWidth + "x" + previewHeight);
                     showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
                     showInference(lastProcessingTimeMs + "ms");
+                    iv.setImageBitmap(detectred);
+
                   }
                 });
           }

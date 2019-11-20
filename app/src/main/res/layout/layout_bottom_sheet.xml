@@ -181,6 +181,12 @@
         android:text="Connect" />
         />
 
+    <ImageView
+        android:id="@+id/openCV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srcCompat="@android:color/white" />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
