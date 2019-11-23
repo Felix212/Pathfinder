@@ -153,33 +153,42 @@
     </RelativeLayout>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-    <Button
-        android:id="@+id/bntF"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="Forwards" />
-    <Button
-        android:id="@+id/bntB"
+        android:orientation="horizontal"
+        android:gravity="center">
+        <Button
+            android:id="@+id/bntF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="▲" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="Backwards" />
-    <Button
-        android:id="@+id/bntR"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="Right" />
-    <Button
-        android:id="@+id/bntL"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="Left" />
+        android:orientation="horizontal"
+        android:gravity="center">
+        <Button
+            android:id="@+id/bntL"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="◄" />
+        <Button
+            android:id="@+id/bntB"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="▼" />
+        <Button
+            android:id="@+id/bntR"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="►" />
+    </LinearLayout>
     <Button
         android:id="@+id/bntC"
+        android:layout_width="138dp"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="Connect" />
-        />
+        android:text="Test Route" />
+    />
 
     <ImageView
         android:id="@+id/openCV"

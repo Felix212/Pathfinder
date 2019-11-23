@@ -205,9 +205,10 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-            LOGGER.i(croppedBitmap.getWidth() + " x " + croppedBitmap.getHeight());
-            LOGGER.i(rgbFrameBitmap.getWidth() + " x " + rgbFrameBitmap.getHeight());
+            //LOGGER.i(croppedBitmap.getWidth() + " x " + croppedBitmap.getHeight());
+           // LOGGER.i(rgbFrameBitmap.getWidth() + " x " + rgbFrameBitmap.getHeight());
             Bitmap detectred = Bitmap.createBitmap(redlineDetection.processImage(rgbFrameBitmap));
+
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
             final Paint paint = new Paint();

@@ -38,7 +38,7 @@ public class DetectReader {
             LOGGER.i(String.valueOf(res.getResults()));
             this.Objects = new LinkedList<Classifier.Recognition>();
             if(res.getResults() > 19) {
-                this.STRAT = GOTOCIRCLE;
+                //this.STRAT = GOTOCIRCLE;
                 this.oldLocation = o.getLocation();
                 LOGGER.i("FOUND OBJECT. CHANGING STRATEGY.");
             }

@@ -16,7 +16,7 @@ public class RedlineDetection {
     public RedlineDetection() {
         OpenCVLoader.initDebug();
         this.scalarLow = new Scalar(0, 100, 100);
-        this.scalarHigh = new Scalar(10, 255, 255);
+        this.scalarHigh = new Scalar(5, 255, 255);
         this.mat1 = new Mat(640,480, CvType.CV_16UC4);
         this.mat2 = new Mat(640,480, CvType.CV_16UC4);
     }

@@ -16,7 +16,8 @@ import geist.re.mindlib.listeners.MotorStateListener;
 
 public class RobotNavigator implements View.OnClickListener {
     private static final String TAG = "ControlApp";
-    private static final String ROBOT_NAME = "SpoReiJo";
+    private static final String ROBOT_NAME = "NXT";
+    private static final int speed = 10;
     private RobotService robot = new RobotService();
     private MotorStateEvent ASTATE;
     public RobotNavigator() {
@@ -57,45 +58,48 @@ public class RobotNavigator implements View.OnClickListener {
         robot.executeSyncTwoMotorTask(robot.motorA.run(-15),robot.motorB.run(15));
     }
     private void waitcommand() {
-        while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
-            LOGGER.i("Waiting for command for last command to finish.");
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+            while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
+                LOGGER.i("Waiting for command for last command to finish.");
+
+        }
+        try {
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
     private void rotate() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(15, 100), robot.motorB.run(-15, 100));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 166), robot.motorB.run(-speed, 166));
+        waitcommand();
     }
     private void longlenght() {
-
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 2000), robot.motorB.run(speed, 2000));
+        waitcommand();
     }
     private void shortlenght() {
-
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 1000), robot.motorB.run(speed, 1000));
+        waitcommand();
     }
     public void testRoute() {
-        rotate();
-/*
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-15, 1000), robot.motorB.run(-15, 1000));
-        while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
-            LOGGER.i("SECOND COMMAND");
-        }
-        robot.executeSyncTwoMotorTask(robot.motorA.run(15, 1000), robot.motorB.run(15, 1000));
-        while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
-            LOGGER.i("THIRD COMMAND");
-        }
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-15, 1000), robot.motorB.run(-15, 1000));
-        while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
-            LOGGER.i("FOURTH COMMAND");
-        }
-
-        while(ASTATE.getTachoCount() < 1000) {
-            LOGGER.i(Integer.toString(ASTATE.getTachoCount()));
-        }
-
-        robot.executeSyncTwoMotorTask(robot.motorA.stop(),robot.motorB.stop());
-
-        registerMotorListener();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-15),robot.motorB.run(-15));
-
-        */
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                shortlenght();
+                rotate();
+                shortlenght();
+                rotate();
+                shortlenght();
+                rotate();
+                shortlenght();
+                rotate();
+            }
+        };
+        thread.start();
     }
 
     @Override
