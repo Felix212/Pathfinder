@@ -19,6 +19,7 @@ public class RobotNavigator implements View.OnClickListener {
     private static final String ROBOT_NAME = "NXT";
     private static final int speed = 10;
     private RobotService robot = new RobotService();
+    private static boolean isRotating = false;
     private MotorStateEvent ASTATE;
     public RobotNavigator() {
         if(robot.getConnectionState() != RobotService.CONN_STATE_CONNECTED &&
@@ -77,6 +78,28 @@ public class RobotNavigator implements View.OnClickListener {
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 166), robot.motorB.run(-speed, 166));
         waitcommand();
     }
+    public void rotateLeft() {
+        if(!isRotating) {
+            isRotating = true;
+            robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
+            waitcommand();
+            robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 270), robot.motorB.run(-speed, 270));
+            waitcommand();
+            isRotating = false;
+        }
+
+    }
+    public void rotateRight() {
+        if(!isRotating) {
+            isRotating = true;
+            robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
+            waitcommand();
+            robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 270), robot.motorB.run(speed, 270));
+            waitcommand();
+            isRotating = false;
+        }
+
+    }
     private void longlenght() {
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 2000), robot.motorB.run(speed, 2000));
         waitcommand();
@@ -107,9 +130,9 @@ public class RobotNavigator implements View.OnClickListener {
         switch(view.getId()) {
             case R.id.bntF: LOGGER.i("F");
                 forward(); break;
-            case R.id.bntR: LOGGER.i("R"); right();
+            case R.id.bntR: LOGGER.i("R"); rotateRight();
                 break;
-            case R.id.bntL: LOGGER.i("L"); left();
+            case R.id.bntL: LOGGER.i("L"); rotateLeft();
                 break;
             case R.id.bntB: LOGGER.i("B"); backwards();
                 break;

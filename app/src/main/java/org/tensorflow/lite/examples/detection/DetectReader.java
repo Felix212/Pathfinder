@@ -17,7 +17,7 @@ public class DetectReader {
         this.navigator = nav;
     }
     private static final Logger LOGGER = new Logger();
-    private static int STRAT = 0;
+    private static int STRAT = 1;
     private static final int FINDCIRCLE = 0;
     private static final int GOTOCIRCLE = 1;
     private List<Classifier.Recognition> Objects = new LinkedList<Classifier.Recognition>();
@@ -74,9 +74,7 @@ public class DetectReader {
         }
         return FINALRESULT;
     }
-    public String decideStrategy(RectF pos) {
-        LOGGER.i(String.valueOf(pos.centerX()));
-        LOGGER.i(String.valueOf(oldLocation.centerX()));
+    public void decideStrategy(RectF pos) {
 
         oldLocation = pos;
 
@@ -89,7 +87,5 @@ public class DetectReader {
         if(pos.centerX() > 100 && pos.centerX() < 200) {
             navigator.forward();
         }
-
-        return null;
     }
 }

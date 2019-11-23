@@ -55,7 +55,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final Logger LOGGER = new Logger();
   // Create RobotNavigator
   public RobotNavigator navigator = new RobotNavigator();
-  public RedlineDetection redlineDetection = new RedlineDetection();
+  public RedlineDetection redlineDetection = new RedlineDetection(navigator);
   public ImageView iv;
   // Configuration values for the prepackaged SSD model.
   private static final int TF_OD_API_INPUT_SIZE = 300;
@@ -104,7 +104,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     mClickButton5.setOnClickListener(this.navigator);
     //
     iv = findViewById(R.id.openCV);
-    iv.setRotation(90);
+    //iv.setRotation(90);
   }
 
   @Override
@@ -208,7 +208,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             //LOGGER.i(croppedBitmap.getWidth() + " x " + croppedBitmap.getHeight());
            // LOGGER.i(rgbFrameBitmap.getWidth() + " x " + rgbFrameBitmap.getHeight());
             Bitmap detectred = Bitmap.createBitmap(redlineDetection.processImage(rgbFrameBitmap));
-
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
             final Paint paint = new Paint();
