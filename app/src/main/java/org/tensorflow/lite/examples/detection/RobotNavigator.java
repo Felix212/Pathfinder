@@ -17,7 +17,9 @@ import geist.re.mindlib.listeners.MotorStateListener;
 public class RobotNavigator implements View.OnClickListener {
     private static final String TAG = "ControlApp";
     private static final String ROBOT_NAME = "NXT";
-    private static final int speed = 10;
+    private static int speed = 15;
+    private static int slowSpeed = 7;
+    private static int turnvalue = 8;
     private RobotService robot = new RobotService();
     private static boolean isRotating = false;
     private MotorStateEvent ASTATE;
@@ -47,16 +49,16 @@ public class RobotNavigator implements View.OnClickListener {
     }
 
     public void forward(){
-        robot.executeSyncTwoMotorTask(robot.motorA.run(15),robot.motorB.run(15));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
     }
     public void left() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(15),robot.motorB.run(10));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed-turnvalue));
     }
     public void right() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(10),robot.motorB.run(15));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed-turnvalue),robot.motorB.run(speed));
     }
     public void backwards() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-15),robot.motorB.run(15));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed),robot.motorB.run(-speed));
     }
     private void waitcommand() {
         try {
@@ -74,7 +76,7 @@ public class RobotNavigator implements View.OnClickListener {
             e.printStackTrace();
         }
     }
-    private void rotate() {
+    private void rotateTest() {
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 166), robot.motorB.run(-speed, 166));
         waitcommand();
     }
@@ -108,18 +110,30 @@ public class RobotNavigator implements View.OnClickListener {
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 1000), robot.motorB.run(speed, 1000));
         waitcommand();
     }
+    public void stop() {
+        robot.executeSyncTwoMotorTask(robot.motorA.stop(), robot.motorB.stop());
+    }
+    public void scan() {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 1200), robot.motorB.run(-slowSpeed, 1200));
+            }
+        };
+        thread.start();
+    }
     public void testRoute() {
         Thread thread = new Thread() {
             @Override
             public void run() {
                 shortlenght();
-                rotate();
+                rotateTest();
                 shortlenght();
-                rotate();
+                rotateTest();
                 shortlenght();
-                rotate();
+                rotateTest();
                 shortlenght();
-                rotate();
+                rotateTest ();
             }
         };
         thread.start();
@@ -136,7 +150,9 @@ public class RobotNavigator implements View.OnClickListener {
                 break;
             case R.id.bntB: LOGGER.i("B"); backwards();
                 break;
-            case R.id.bntC: LOGGER.i("testroute");
+            case R.id.bntStop: LOGGER.i("Stop"); stop();
+                break;
+            case R.id.bntTest: LOGGER.i("testroute");
                 testRoute();
                 break;
             default:

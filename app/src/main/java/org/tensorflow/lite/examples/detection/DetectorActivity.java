@@ -32,7 +32,9 @@ import android.util.Size;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -76,6 +78,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap rgbFrameBitmap = null;
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
+  private Bitmap detectred = Bitmap.createBitmap(480,640, Config.ARGB_8888);
   private DetectReader imageFeeder = new DetectReader(this.navigator);
   private boolean computingDetection = false;
 
@@ -100,8 +103,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     mClickButton3.setOnClickListener(this.navigator);
     Button mClickButton4 = findViewById(R.id.bntR);
     mClickButton4.setOnClickListener(this.navigator);
-    Button mClickButton5 = findViewById(R.id.bntC);
+    Button mClickButton5 = findViewById(R.id.bntTest);
     mClickButton5.setOnClickListener(this.navigator);
+    Button mClickButton6 = findViewById(R.id.bntReset);
+    mClickButton6.setOnClickListener(this.imageFeeder);
+    Button mClickButton7 = findViewById(R.id.bntStop);
+    mClickButton7.setOnClickListener(this.navigator);
+    Switch mSwtich1 = findViewById(R.id.switchfind);
+    mSwtich1.setOnCheckedChangeListener((CompoundButton.OnCheckedChangeListener) this.imageFeeder);
     //
     iv = findViewById(R.id.openCV);
     //iv.setRotation(90);
@@ -205,9 +214,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             final long startTime = SystemClock.uptimeMillis();
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-            //LOGGER.i(croppedBitmap.getWidth() + " x " + croppedBitmap.getHeight());
-           // LOGGER.i(rgbFrameBitmap.getWidth() + " x " + rgbFrameBitmap.getHeight());
-            Bitmap detectred = Bitmap.createBitmap(redlineDetection.processImage(rgbFrameBitmap));
+            if(imageFeeder.STRAT < 2) {
+              detectred = Bitmap.createBitmap(imageFeeder.stratChooserRedline(rgbFrameBitmap));
+            }
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
             final Paint paint = new Paint();
@@ -230,7 +239,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
               if (location != null && result.getConfidence() >= minimumConfidence) {
                 float size = location.width() * location.height();
                 //LOGGER.i(Float.toString(size));
-                imageFeeder.stratChooser(result);
+                imageFeeder.stratChooserTensor(result);
                 canvas.drawRect(location, paint);
 
                 cropToFrameTransform.mapRect(location);

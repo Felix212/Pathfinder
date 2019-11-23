@@ -1,91 +1,120 @@
 package org.tensorflow.lite.examples.detection;
-
+import android.graphics.Bitmap;
 import android.graphics.RectF;
+import android.view.View;
+import android.widget.CompoundButton;
 
 import org.tensorflow.lite.examples.detection.env.Logger;
-import org.tensorflow.lite.examples.detection.env.TrackingResult;
 import org.tensorflow.lite.examples.detection.tflite.Classifier;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
 
-public class DetectReader {
+public class DetectReader implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     private RobotNavigator navigator;
     public DetectReader(RobotNavigator nav) {
         this.navigator = nav;
+        this.redlineDetection = new RedlineDetection(this.navigator);
     }
+    private static Checkresult cr;
+    public RedlineDetection redlineDetection;
     private static final Logger LOGGER = new Logger();
-    private static int STRAT = 1;
+    public static int STRAT = 3;
     private static final int FINDCIRCLE = 0;
     private static final int GOTOCIRCLE = 1;
-    private List<Classifier.Recognition> Objects = new LinkedList<Classifier.Recognition>();
-    private Classifier.Recognition TrackedObject;
-    private static RectF oldLocation;
-    public void stratChooser(Classifier.Recognition o) {
+    private static final int DESTINATIONREACHED = 2;
+    private static final int TESTMODE = 3;
+    public void stratChooserTensor(Classifier.Recognition o) {
         switch(STRAT) {
-            case FINDCIRCLE: addObject(o);
+            case FINDCIRCLE:
             break;
             case GOTOCIRCLE: decideStrategy(o.getLocation());
             break;
+            case DESTINATIONREACHED: navigator.stop();
+            break;
+            case TESTMODE: //Do nothing
         }
     }
-    public void addObject(Classifier.Recognition o) {
-        this.Objects.add(o);
-        if(this.Objects.size() > 20) {
-            TrackingResult res = getBestObject();
-            LOGGER.i(String.valueOf(res.getResults()));
-            this.Objects = new LinkedList<Classifier.Recognition>();
-            if(res.getResults() > 19) {
-                //this.STRAT = GOTOCIRCLE;
-                this.oldLocation = o.getLocation();
-                LOGGER.i("FOUND OBJECT. CHANGING STRATEGY.");
-            }
-
+    public Bitmap stratChooserRedline(Bitmap bm) {
+        switch(STRAT) {
+            case GOTOCIRCLE: return redlineDetection.processImage(bm);
+            case DESTINATIONREACHED: return null;
         }
-    }
-    // Get best Result from 4 object
-    private TrackingResult getBestObject() {
-        List<TrackingResult> res = new ArrayList<>();
-        TrackingResult FINALRESULT = null;
-        for (final Classifier.Recognition tmp : this.Objects) {
-            res.add(new TrackingResult(tmp.getConfidence(), tmp.getLocation()));
-        }
-
-        for(TrackingResult result: res) {
-            int i = 0;
-            for (final Classifier.Recognition tmp: this.Objects) {
-                if (result.checkCollide(this.Objects.get(i).getLocation())) {
-                    result.addResult();
-                }
-                i++;
-            }
-
-
-        }
-        FINALRESULT = res.get(0);
-        for(TrackingResult result: res) {
-            LOGGER.i(String.valueOf(result.BOX.centerX()));
-            if(FINALRESULT.getResults() <= result.getResults()) {
-                FINALRESULT = result;
-            }
-
-        }
-        return FINALRESULT;
+        return null;
     }
     public void decideStrategy(RectF pos) {
-
-        oldLocation = pos;
-
-        if(pos.centerX() < 100) {
-            navigator.left();
+        if((pos.height() * pos.width()) < 18000) {
+            if(pos.centerX() < 100) {
+                navigator.left();
+            }
+            if(pos.centerX() > 200) {
+                navigator.right();
+            }
+            if(pos.centerX() > 100 && pos.centerX() < 200) {
+                navigator.forward();
+            }
         }
-        if(pos.centerX() > 200) {
-            navigator.right();
-        }
-        if(pos.centerX() > 100 && pos.centerX() < 200) {
-            navigator.forward();
+        if((pos.width() * pos.height() > 18000)) {
+            if(cr == null) {
+                cr = new Checkresult();
+                cr.check();
+            } else {
+                int res = cr.check();
+                if(res == 0) {
+                    cr = new Checkresult();
+                }
+                if(res == 1) {
+                    LOGGER.i("We reached our destination.");
+                    STRAT = DESTINATIONREACHED;
+                }
+                if(res == 2) {
+                    LOGGER.i("Not enough results yet.");
+                }
+            }
         }
     }
+
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()) {
+            case R.id.bntReset: STRAT = 1; navigator.forward();
+            LOGGER.i("RESET!!!");
+            break;
+        }
+
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        if(b) {
+            this.STRAT = GOTOCIRCLE;
+            this.navigator.scan();
+            LOGGER.i("MODE: " + this.STRAT);
+        } else {
+            this.STRAT = TESTMODE;
+            this.navigator.stop();
+            LOGGER.i("MODE: " + this.STRAT);
+        }
+    }
+
+    private class Checkresult {
+        final long tStart = System.currentTimeMillis();
+        private int counter;
+        private int check() {
+            counter++;
+            LOGGER.i("ResultCounter: " + counter);
+            if(counter == 5) {
+                long tEnd = System.currentTimeMillis();
+                long tDelta = tEnd - tStart;
+                double elapsedSeconds = tDelta / 1000.0;
+                LOGGER.i("Time elapsed after 5 Results" + elapsedSeconds);
+                if(elapsedSeconds < 2.0) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+            return 2;
+        }
+
+    }
 }
+

@@ -184,11 +184,29 @@
             android:text="►" />
     </LinearLayout>
     <Button
-        android:id="@+id/bntC"
+        android:id="@+id/bntTest"
         android:layout_width="138dp"
         android:layout_height="wrap_content"
         android:text="Test Route" />
     />
+    <Button
+        android:id="@+id/bntReset"
+        android:layout_width="138dp"
+        android:layout_height="wrap_content"
+        android:text="Reset State" />
+    />
+    <Button
+        android:id="@+id/bntStop"
+        android:layout_width="138dp"
+        android:layout_height="wrap_content"
+        android:text="Stop" />
+    />
+
+    <Switch
+        android:id="@+id/switchfind"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Findmode" />
 
     <ImageView
         android:id="@+id/openCV"
