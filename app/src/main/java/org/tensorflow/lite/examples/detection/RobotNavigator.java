@@ -64,30 +64,39 @@ public class RobotNavigator implements View.OnClickListener {
     // wait before next command is executed
     private void waitCommand() {
         try {
-            Thread.sleep(300);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
             while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
         }
         try {
-            Thread.sleep(300);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     public void rotateLeft() {
+        stop();
+        waitCommand();
         robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
         waitCommand();
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 270), robot.motorB.run(-speed, 270));
         waitCommand();
     }
     public void rotateRight() {
+        stop();
+        waitCommand();
         robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
         waitCommand();
         robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 270), robot.motorB.run(speed, 270));
         waitCommand();
+    }
+    public void lastForwardToDestination() {
+        robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 400),robot.motorB.run(slowSpeed, 400));
+        waitCommand();
+        stop();
     }
 
     //methods for route

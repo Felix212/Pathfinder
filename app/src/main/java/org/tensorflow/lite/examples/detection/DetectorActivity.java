@@ -35,6 +35,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -59,6 +60,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   public RobotNavigator navigator = new RobotNavigator();
   public RedlineDetection redlineDetection = new RedlineDetection(navigator);
   public ImageView iv;
+  TextView textViewObjectSize;
   // Configuration values for the prepackaged SSD model.
   private static final int TF_OD_API_INPUT_SIZE = 300;
   private static final boolean TF_OD_API_IS_QUANTIZED = true;
@@ -111,6 +113,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     mClickButton7.setOnClickListener(this.navigator);
     Switch mSwtich1 = findViewById(R.id.switchfind);
     mSwtich1.setOnCheckedChangeListener((CompoundButton.OnCheckedChangeListener) this.detectReader);
+    textViewObjectSize = findViewById(R.id.textObjectSize);
     //
     iv = findViewById(R.id.openCV);
     //iv.setRotation(90);
@@ -265,6 +268,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     showInference(lastProcessingTimeMs + "ms");
                     // output redline image
                     iv.setImageBitmap(detectred);
+                    textViewObjectSize.setText("Obejectpixels:" + Integer.toString(detectReader.sizeRect));
                   }
                 });
           }

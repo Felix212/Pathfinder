@@ -28,7 +28,7 @@ public class RedlineDetection {
         this.robotNavigator = navigator;
         OpenCVLoader.initDebug();
         // set red range
-        this.scalarLow = new Scalar(0, 150, 150                                                                                                                                                                                                                                                                                                                                                                              );
+        this.scalarLow = new Scalar(0, 200, 100);
         this.scalarHigh = new Scalar(5, 255, 255);
         this.mat1 = new Mat(640,480, CvType.CV_16UC4);
         this.mat2 = new Mat(640,480, CvType.CV_16UC4);
