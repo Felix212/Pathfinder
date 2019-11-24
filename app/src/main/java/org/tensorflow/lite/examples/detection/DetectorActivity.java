@@ -79,7 +79,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Bitmap croppedBitmap = null;
   private Bitmap cropCopyBitmap = null;
   private Bitmap detectred = Bitmap.createBitmap(480,640, Config.ARGB_8888);
-  private DetectReader imageFeeder = new DetectReader(this.navigator);
+  private DetectReader detectReader = new DetectReader(this.navigator);
   private boolean computingDetection = false;
 
   private long timestamp = 0;
@@ -106,11 +106,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     Button mClickButton5 = findViewById(R.id.bntTest);
     mClickButton5.setOnClickListener(this.navigator);
     Button mClickButton6 = findViewById(R.id.bntReset);
-    mClickButton6.setOnClickListener(this.imageFeeder);
+    mClickButton6.setOnClickListener(this.detectReader);
     Button mClickButton7 = findViewById(R.id.bntStop);
     mClickButton7.setOnClickListener(this.navigator);
     Switch mSwtich1 = findViewById(R.id.switchfind);
-    mSwtich1.setOnCheckedChangeListener((CompoundButton.OnCheckedChangeListener) this.imageFeeder);
+    mSwtich1.setOnCheckedChangeListener((CompoundButton.OnCheckedChangeListener) this.detectReader);
     //
     iv = findViewById(R.id.openCV);
     //iv.setRotation(90);
@@ -194,11 +194,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     }
     computingDetection = true;
     //LOGGER.i("Preparing image " + currTimestamp + " for detection in bg thread.");
-
     rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
-
     readyForNextImage();
-
     final Canvas canvas = new Canvas(croppedBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
     // For examining the actual TF input.
@@ -210,12 +207,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         new Runnable() {
           @Override
           public void run() {
+            ///////////////////////////////////////////
+            // >>>> IMPORTANT STUFF HAPPENS HERE <<<<
+            ///////////////////////////////////////////
             LOGGER.i("Running detection on image " + currTimestamp);
             final long startTime = SystemClock.uptimeMillis();
+            // get list with detected Objects
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-            if(imageFeeder.STRAT < 2) {
-              detectred = Bitmap.createBitmap(imageFeeder.stratChooserRedline(rgbFrameBitmap));
+            // run detect redline until destination is reached
+            if(detectReader.STRAT < DetectReader.DESTINATIONREACHED) {
+              detectred = Bitmap.createBitmap(detectReader.stratChooserRedline(rgbFrameBitmap));
             }
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
             final Canvas canvas = new Canvas(cropCopyBitmap);
@@ -236,14 +238,14 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
             for (final Classifier.Recognition result : results) {
               final RectF location = result.getLocation();
+              // filter out objects that are below the minimumConfidence
               if (location != null && result.getConfidence() >= minimumConfidence) {
                 float size = location.width() * location.height();
                 //LOGGER.i(Float.toString(size));
-                imageFeeder.stratChooserTensor(result);
+                // choose strategy for detected object
+                detectReader.stratChooserTensor(result);
                 canvas.drawRect(location, paint);
-
                 cropToFrameTransform.mapRect(location);
-
                 result.setLocation(location);
                 mappedRecognitions.add(result);
               }
@@ -261,8 +263,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     showFrameInfo(previewWidth + "x" + previewHeight);
                     showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
                     showInference(lastProcessingTimeMs + "ms");
+                    // output redline image
                     iv.setImageBitmap(detectred);
-
                   }
                 });
           }

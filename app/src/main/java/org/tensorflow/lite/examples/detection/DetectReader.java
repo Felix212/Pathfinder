@@ -19,9 +19,10 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
     private static final Logger LOGGER = new Logger();
     public static int STRAT = 3;
     private static final int FINDCIRCLE = 0;
-    private static final int GOTOCIRCLE = 1;
-    private static final int DESTINATIONREACHED = 2;
-    private static final int TESTMODE = 3;
+    public static final int GOTOCIRCLE = 1;
+    public static final int DESTINATIONREACHED = 2;
+    public static final int TESTMODE = 3;
+    // circle detection
     public void stratChooserTensor(Classifier.Recognition o) {
         switch(STRAT) {
             case FINDCIRCLE:
@@ -33,6 +34,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
             case TESTMODE: //Do nothing
         }
     }
+    // redline detection
     public Bitmap stratChooserRedline(Bitmap bm) {
         switch(STRAT) {
             case GOTOCIRCLE: return redlineDetection.processImage(bm);
@@ -41,18 +43,25 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
         return null;
     }
     public void decideStrategy(RectF pos) {
-        if((pos.height() * pos.width()) < 18000) {
+        // navigate to circle
+        float rectSize = pos.width() * pos.height();
+        if(rectSize < 16000) {
+            // go left when circle is on the left side of the frame
             if(pos.centerX() < 100) {
                 navigator.left();
             }
+            // go right..
             if(pos.centerX() > 200) {
                 navigator.right();
             }
+            // stay mid
             if(pos.centerX() > 100 && pos.centerX() < 200) {
                 navigator.forward();
             }
         }
-        if((pos.width() * pos.height() > 18000)) {
+        // filter out big faulty detected Objects
+        // destination is reached when 5 objects of the size between 16000 and 20000 pixels are detected within 2 seconds (see Checkresult class)
+        if(rectSize > 16000 && rectSize < 20000) {
             if(cr == null) {
                 cr = new Checkresult();
                 cr.check();
@@ -75,13 +84,13 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
     @Override
     public void onClick(View view) {
         switch(view.getId()) {
-            case R.id.bntReset: STRAT = 1; navigator.forward();
+            case R.id.bntReset: STRAT = GOTOCIRCLE; navigator.forward(); cr = null;
             LOGGER.i("RESET!!!");
             break;
         }
 
     }
-
+    // switch between test and find mode
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
         if(b) {
@@ -105,7 +114,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
                 long tEnd = System.currentTimeMillis();
                 long tDelta = tEnd - tStart;
                 double elapsedSeconds = tDelta / 1000.0;
-                LOGGER.i("Time elapsed after 5 Results" + elapsedSeconds);
+                LOGGER.i("Time elapsed after 5 detections" + elapsedSeconds);
                 if(elapsedSeconds < 2.0) {
                     return 1;
                 } else {

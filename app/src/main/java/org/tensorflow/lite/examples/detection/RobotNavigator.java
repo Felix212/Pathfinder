@@ -24,10 +24,7 @@ public class RobotNavigator implements View.OnClickListener {
     private static boolean isRotating = false;
     private MotorStateEvent ASTATE;
     public RobotNavigator() {
-        if(robot.getConnectionState() != RobotService.CONN_STATE_CONNECTED &&
-                robot.getConnectionState() != RobotService.CONN_STATE_CONNECTING) {
-            robot.connectToRobot(ROBOT_NAME);
-        }
+        connect();
         registerMotorListener();
     }
     private static final Logger LOGGER = new Logger();
@@ -48,6 +45,7 @@ public class RobotNavigator implements View.OnClickListener {
         }
     }
 
+    // drive methods
     public void forward(){
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
     }
@@ -60,15 +58,17 @@ public class RobotNavigator implements View.OnClickListener {
     public void backwards() {
         robot.executeSyncTwoMotorTask(robot.motorA.run(-speed),robot.motorB.run(-speed));
     }
-    private void waitcommand() {
+    public void stop() {
+        robot.executeSyncTwoMotorTask(robot.motorA.stop(), robot.motorB.stop());
+    }
+    // wait before next command is executed
+    private void waitCommand() {
         try {
             Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
             while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
-                LOGGER.i("Waiting for command for last command to finish.");
-
         }
         try {
             Thread.sleep(300);
@@ -76,48 +76,41 @@ public class RobotNavigator implements View.OnClickListener {
             e.printStackTrace();
         }
     }
-    private void rotateTest() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 166), robot.motorB.run(-speed, 166));
-        waitcommand();
-    }
-    public void rotateLeft() {
-        if(!isRotating) {
-            isRotating = true;
-            robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
-            waitcommand();
-            robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 270), robot.motorB.run(-speed, 270));
-            waitcommand();
-            isRotating = false;
-        }
 
+    public void rotateLeft() {
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
+        waitCommand();
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 270), robot.motorB.run(-speed, 270));
+        waitCommand();
     }
     public void rotateRight() {
-        if(!isRotating) {
-            isRotating = true;
-            robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
-            waitcommand();
-            robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 270), robot.motorB.run(speed, 270));
-            waitcommand();
-            isRotating = false;
-        }
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
+        waitCommand();
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 270), robot.motorB.run(speed, 270));
+        waitCommand();
+    }
 
-    }
-    private void longlenght() {
+    //methods for route
+    private void longLength() {
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 2000), robot.motorB.run(speed, 2000));
-        waitcommand();
+        waitCommand();
     }
-    private void shortlenght() {
+    private void rotateTest() {
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 166), robot.motorB.run(-speed, 166));
+        waitCommand();
+    }
+    private void shortLength() {
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 1000), robot.motorB.run(speed, 1000));
-        waitcommand();
+        waitCommand();
     }
-    public void stop() {
-        robot.executeSyncTwoMotorTask(robot.motorA.stop(), robot.motorB.stop());
-    }
+
     public void scan() {
         Thread thread = new Thread() {
             @Override
             public void run() {
                 robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 1200), robot.motorB.run(-slowSpeed, 1200));
+                waitCommand();
+                forward();
             }
         };
         thread.start();
@@ -126,33 +119,33 @@ public class RobotNavigator implements View.OnClickListener {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                shortlenght();
+                shortLength();
                 rotateTest();
-                shortlenght();
+                longLength();
                 rotateTest();
-                shortlenght();
+                shortLength();
                 rotateTest();
-                shortlenght();
+                longLength();
                 rotateTest ();
             }
         };
         thread.start();
     }
-
+    //Button listener for testing
     @Override
     public void onClick(View view) {
         switch(view.getId()) {
-            case R.id.bntF: LOGGER.i("F");
+            case R.id.bntF: LOGGER.i("Forward");
                 forward(); break;
-            case R.id.bntR: LOGGER.i("R"); rotateRight();
+            case R.id.bntR: LOGGER.i("Right"); rotateRight();
                 break;
-            case R.id.bntL: LOGGER.i("L"); rotateLeft();
+            case R.id.bntL: LOGGER.i("Left"); rotateLeft();
                 break;
-            case R.id.bntB: LOGGER.i("B"); backwards();
+            case R.id.bntB: LOGGER.i("Back"); backwards();
                 break;
             case R.id.bntStop: LOGGER.i("Stop"); stop();
                 break;
-            case R.id.bntTest: LOGGER.i("testroute");
+            case R.id.bntTest: LOGGER.i("Route test");
                 testRoute();
                 break;
             default:
