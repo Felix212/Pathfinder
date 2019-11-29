@@ -84,42 +84,46 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
         // navigate to circle
         float rectSize = pos.width() * pos.height();
         //when destination is not reached yet
-        if(rectSize < MINSIZEDESTINATION) {
-            // go left when circle is on the left side of the frame
-            if(pos.centerX() < 105) {
-                navigator.left();
+        // filter out faulty wide objects
+        if(pos.width() < 260 ) {
+            if(rectSize < MINSIZEDESTINATION) {
+                // go left when circle is on the left side of the frame
+                if(pos.centerX() < 105) {
+                    navigator.left();
+                }
+                // go right..
+                if(pos.centerX() > 195) {
+                    navigator.right();
+                }
+                // stay mid
+                if(pos.centerX() >= 105 && pos.centerX() <= 195) {
+                    navigator.forward();
+                }
             }
-            // go right..
-            if(pos.centerX() > 195) {
-                navigator.right();
-            }
-            // stay mid
-            if(pos.centerX() >= 105 && pos.centerX() <= 195) {
-                navigator.forward();
-            }
-        }
-        // filter out big faulty detected Objects
-        // destination is reached when 3 objects of the size between MINSIZEDESTINATION and MAXSIZEDESTINATION pixels are detected within 1.5 seconds (see Checkresult class)
-        if(rectSize > MINSIZEDESTINATION && rectSize < MAXSIZEDESTINATION) {
-            if(cr == null) {
-                cr = new Checkresult();
-                cr.check();
-            } else {
-                int res = cr.check();
-                if(res == 0) {
+            // filter out big faulty detected Objects
+            // destination is reached when 3 objects of the size between MINSIZEDESTINATION and MAXSIZEDESTINATION pixels are detected within 1.5 seconds (see Checkresult class)
+            if(rectSize > MINSIZEDESTINATION && rectSize < MAXSIZEDESTINATION) {
+                if(cr == null) {
                     cr = new Checkresult();
-                }
-                if(res == 1) {
-                    LOGGER.i("We reached our destination.");
-                    STRAT = DESTINATIONREACHED;
-                    stopScanRoutine();
-                    this.navigator.lastForwardToDestination();
-                }
-                if(res == 2) {
-                    LOGGER.i("Not enough results yet.");
+                    cr.check();
+                } else {
+                    int res = cr.check();
+                    if(res == 0) {
+                        cr = new Checkresult();
+                    }
+                    if(res == 1) {
+                        LOGGER.i("We reached our destination.");
+                        STRAT = DESTINATIONREACHED;
+                        stopScanRoutine();
+                        this.navigator.lastForwardToDestination();
+                    }
+                    if(res == 2) {
+                        LOGGER.i("Not enough results yet.");
+                    }
                 }
             }
         }
+
     }
 
     @Override

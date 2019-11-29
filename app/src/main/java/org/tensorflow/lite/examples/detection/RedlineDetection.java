@@ -28,7 +28,7 @@ public class RedlineDetection {
         this.robotNavigator = navigator;
         OpenCVLoader.initDebug();
         // set red range
-        this.scalarLow = new Scalar(0, 200, 100);
+        this.scalarLow = new Scalar(0, 70, 100);
         this.scalarHigh = new Scalar(5, 255, 255);
         this.mat1 = new Mat(640,480, CvType.CV_16UC4);
         this.mat2 = new Mat(640,480, CvType.CV_16UC4);
@@ -44,7 +44,7 @@ public class RedlineDetection {
         Core.inRange(mat1, scalarLow, scalarHigh, mat2);
         //rotate by 90 degrees
         Core.rotate(mat2, mat2, 0);
-        // convert back to bitmap for ImageView
+        // convert back to bnitmap for ImageView
         Bitmap result = Bitmap.createBitmap(mat2.width(), mat2.height(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat2, result);
         // check for white pixels

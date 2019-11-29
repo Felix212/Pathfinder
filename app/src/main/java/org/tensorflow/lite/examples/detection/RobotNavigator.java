@@ -16,7 +16,7 @@ import geist.re.mindlib.listeners.MotorStateListener;
 
 public class RobotNavigator implements View.OnClickListener {
     private static final String TAG = "ControlApp";
-    private static final String ROBOT_NAME = "NXT";
+    private static final String ROBOT_NAME = "SpoReiJo";
     private static int speed = 15;
     private static int slowSpeed = 7;
     private static int turnvalue = 8;
@@ -82,7 +82,7 @@ public class RobotNavigator implements View.OnClickListener {
         waitCommand();
         robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
         waitCommand();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 270), robot.motorB.run(-speed, 270));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 7), robot.motorB.run(-speed, 7));
         waitCommand();
     }
     public void rotateRight() {
@@ -90,7 +90,7 @@ public class RobotNavigator implements View.OnClickListener {
         waitCommand();
         robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
         waitCommand();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 270), robot.motorB.run(speed, 270));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 7), robot.motorB.run(speed, 7));
         waitCommand();
     }
     public void lastForwardToDestination() {
@@ -98,31 +98,29 @@ public class RobotNavigator implements View.OnClickListener {
         waitCommand();
         stop();
     }
-
+    public void scan() {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 600), robot.motorB.run(-slowSpeed, 600));
+                waitCommand();
+                forward();
+            }
+        };
+        thread.start();
+    }
     //methods for route
     private void longLength() {
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 2000), robot.motorB.run(speed, 2000));
         waitCommand();
     }
     private void rotateTest() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 166), robot.motorB.run(-speed, 166));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 100), robot.motorB.run(-speed, 100));
         waitCommand();
     }
     private void shortLength() {
         robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 1000), robot.motorB.run(speed, 1000));
         waitCommand();
-    }
-
-    public void scan() {
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 1200), robot.motorB.run(-slowSpeed, 1200));
-                waitCommand();
-                forward();
-            }
-        };
-        thread.start();
     }
     public void testRoute() {
         Thread thread = new Thread() {
