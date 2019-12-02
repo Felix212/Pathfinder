@@ -24,10 +24,10 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
 
     public static final int MINSIZEDESTINATION = 14000;
     public static final int MAXSIZEDESTINATION = 30000;
-
+    private static final int TIME_TO_WAIT = 35000;
     public DetectReader(RobotNavigator nav) {
         this.navigator = nav;
-        this.redlineDetection = new RedlineDetection(this.navigator);
+        this.redlineDetection = new RedlineDetection(this.navigator, this);
     }
 
     Runnable scanTimer = new Runnable() {
@@ -35,12 +35,12 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
         public void run() {
             LOGGER.i("Executing scan routine.");
             navigator.scan();
-            restartScanRoutine(35000);
+            restartScanRoutine(TIME_TO_WAIT);
         }
     };
 
     public static Handler myHandler = new Handler();
-    private static final int TIME_TO_WAIT = 35000;
+
 
     public void startScanRoutine() {
         myHandler.postDelayed(scanTimer, TIME_TO_WAIT);

@@ -58,7 +58,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final Logger LOGGER = new Logger();
   // Create RobotNavigator
   public RobotNavigator navigator = new RobotNavigator();
-  public RedlineDetection redlineDetection = new RedlineDetection(navigator);
   public ImageView iv;
   TextView textViewObjectSize;
   // Configuration values for the prepackaged SSD model.

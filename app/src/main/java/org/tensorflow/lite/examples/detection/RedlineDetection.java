@@ -20,11 +20,13 @@ public class RedlineDetection {
     private final int REDLINELEFT = 0;
     private final int REDLINERIGHT = 1;
     private final int REDLINENOTFOUND = 2;
+    private DetectReader reader;
     DecimalFormat df = new DecimalFormat("#.##");
     Scalar scalarLow, scalarHigh;
     Mat mat1, mat2;
     RobotNavigator robotNavigator;
-    public RedlineDetection(RobotNavigator navigator) {
+    public RedlineDetection(RobotNavigator navigator, DetectReader reader) {
+        this.reader = reader;
         this.robotNavigator = navigator;
         OpenCVLoader.initDebug();
         // set red range
@@ -67,13 +69,18 @@ public class RedlineDetection {
         // navigate
         if(leftPercentage > THRESHOLD && leftPercentage > rightPercentage) {
             LOGGER.i("Redline found RIGHT.");
+            this.reader.stopScanRoutine();
             robotNavigator.rotateRight();
             robotNavigator.forward();
+            this.reader.startScanRoutine();
         }
         if(rightPercentage > THRESHOLD && rightPercentage > leftPercentage) {
             LOGGER.i("Redline found LEFT.");
+            this.reader.stopScanRoutine();
             robotNavigator.rotateLeft();
             robotNavigator.forward();
+            this.reader.startScanRoutine();
+
         }
     }
 }

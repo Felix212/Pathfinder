@@ -3,6 +3,7 @@ import org.tensorflow.lite.examples.detection.env.Logger;
 import android.view.View;
 
 
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import geist.re.mindlib.RobotService;
 import geist.re.mindlib.events.LightStateEvent;
@@ -16,28 +17,22 @@ import geist.re.mindlib.listeners.MotorStateListener;
 
 public class RobotNavigator implements View.OnClickListener {
     private static final String TAG = "ControlApp";
-    private static final String ROBOT_NAME = "SpoReiJo";
+    private static final String ROBOT_NAME = "NXT";
     private static int speed = 15;
     private static int slowSpeed = 7;
     private static int turnvalue = 8;
     private RobotService robot = new RobotService();
     private static boolean isRotating = false;
+    private AtomicBoolean scanning = new AtomicBoolean(false);
     private MotorStateEvent ASTATE;
+    private Thread scanThread;
+
     public RobotNavigator() {
         connect();
-        registerMotorListener();
     }
     private static final Logger LOGGER = new Logger();
 
-    private void registerMotorListener() {
-        robot.motorA.registerListener(new MotorStateListener() {
-            @Override
-            public void onEventOccurred(MotorStateEvent e) {
-                ASTATE = e;
-                LOGGER.i(Integer.toString(ASTATE.getTachoCount()));
-            }
-        }, 100);
-    }
+
     public void connect(){
         if(robot.getConnectionState() != RobotService.CONN_STATE_CONNECTED &&
                 robot.getConnectionState() != RobotService.CONN_STATE_CONNECTING) {
@@ -47,50 +42,87 @@ public class RobotNavigator implements View.OnClickListener {
 
     // drive methods
     public void forward(){
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
+        if(scanThread == null) {
+            robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
+        } else {
+            this.scanning.set(false);
+            this.scanThread.interrupt();
+            robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
+        }
     }
     public void left() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed-turnvalue));
+        if(scanThread == null) {
+            robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed-turnvalue));
+        } else {
+            this.scanning.set(false);
+            this.scanThread.interrupt();
+            robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed-turnvalue));
+        }
+
     }
     public void right() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed-turnvalue),robot.motorB.run(speed));
+        if(scanThread == null) {
+            robot.executeSyncTwoMotorTask(robot.motorA.run(speed-turnvalue),robot.motorB.run(speed));
+        } else {
+            this.scanning.set(false);
+            this.scanThread.interrupt();
+            robot.executeSyncTwoMotorTask(robot.motorA.run(speed-turnvalue),robot.motorB.run(speed));
+        }
     }
     public void backwards() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed),robot.motorB.run(-speed));
+        if(scanThread == null) {
+            robot.executeSyncTwoMotorTask(robot.motorA.run(-speed),robot.motorB.run(-speed));
+        } else {
+            this.scanning.set(false);
+            this.scanThread.interrupt();
+            robot.executeSyncTwoMotorTask(robot.motorA.run(-speed),robot.motorB.run(-speed));
+        }
     }
     public void stop() {
         robot.executeSyncTwoMotorTask(robot.motorA.stop(), robot.motorB.stop());
     }
     // wait before next command is executed
     private void waitCommand() {
+        scanning.set(true);
         try {
-            Thread.sleep(500);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
+            System.out.println(
+                    "Thread was interrupted, Failed to complete operation");
         }
-            while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING) {
+        while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING && scanning.get()) {
         }
+        stop();
         try {
-            Thread.sleep(500);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
+            System.out.println(
+                    "Thread was interrupted, Failed to complete operation");
         }
     }
 
+
+
     public void rotateLeft() {
+        this.scanning.set(false);
+        this.scanThread.interrupt();
         stop();
         waitCommand();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 20), robot.motorB.run(-speed, 20));
         waitCommand();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 7), robot.motorB.run(-speed, 7));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 9), robot.motorB.run(-speed, 9));
         waitCommand();
     }
     public void rotateRight() {
+        this.scanning.set(false);
+        this.scanThread.interrupt();
         stop();
         waitCommand();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 100), robot.motorB.run(-speed, 100));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 20), robot.motorB.run(-speed, 20));
         waitCommand();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 7), robot.motorB.run(speed, 7));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 9), robot.motorB.run(speed, 9));
         waitCommand();
     }
     public void lastForwardToDestination() {
@@ -98,15 +130,23 @@ public class RobotNavigator implements View.OnClickListener {
         waitCommand();
         stop();
     }
+
     public void scan() {
+        this.scanning.set(true);
         Thread thread = new Thread() {
             @Override
             public void run() {
-                robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 600), robot.motorB.run(-slowSpeed, 600));
-                waitCommand();
-                forward();
+                while(scanning.get()) {
+                    RobotNavigator.this.stop();
+                    robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 600), robot.motorB.run(-slowSpeed, 600));
+                    waitCommand();
+                    robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
+                    scanning.set(false);
+                }
+                LOGGER.i("Finished Thread");
             }
         };
+        this.scanThread = thread;
         thread.start();
     }
     //methods for route
