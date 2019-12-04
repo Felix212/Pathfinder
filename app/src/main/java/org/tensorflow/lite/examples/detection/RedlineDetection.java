@@ -12,8 +12,6 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.examples.detection.env.Logger;
 
-import java.util.ArrayList;
-
 // class for Redline detection
 public class RedlineDetection {
     private static final Logger LOGGER = new Logger();
@@ -37,7 +35,6 @@ public class RedlineDetection {
         this.mat2 = new Mat(640,480, CvType.CV_16UC4);
     }
     public void processImage(Bitmap bitmap) {
-        ArrayList ar = new ArrayList();
         Mat mat = new Mat();
         Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         // Convert bitmap to mat
@@ -48,7 +45,7 @@ public class RedlineDetection {
         Core.inRange(mat1, scalarLow, scalarHigh, mat2);
         //rotate by 90 degrees
         Core.rotate(mat2, mat2, 0);
-        // convert back to bnitmap for ImageView
+        // convert back to bitmap for ImageView
         Bitmap result = Bitmap.createBitmap(mat2.width(), mat2.height(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat2, result);
         // check for white pixels and set outputs
