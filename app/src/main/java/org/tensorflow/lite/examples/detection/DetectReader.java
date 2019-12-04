@@ -12,104 +12,76 @@ import org.tensorflow.lite.examples.detection.tflite.Classifier;
 
 public class DetectReader implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
     private RobotNavigator navigator;
-    private static Checkresult cr;
+    private Checkresult cr;
     public RedlineDetection redlineDetection;
     public int sizeRect = 0;
     private Logger LOGGER = new Logger();
-    public static int STRAT = 3;
-    public static final int SCAN = -1;
-    public static final int AVOID = 0;
-    public static final int GOTOCIRCLE = 1;
-    public static final int DESTINATIONREACHED = 2;
-    public static final int TESTMODE = 3;
+    public int Strategy = 3;
+    public final int SCAN = -1;
+    public final int AVOID = 0;
+    public final int GOTOCIRCLE = 1;
+    public final int DESTINATIONREACHED = 2;
+    public final int TESTMODE = 3;
+    private boolean ObjectFound = false;
     public long startTime = 0;
-    public long endTime = 0;
-    public long elapsedTime = 0;
-    public long timeremaining = TIME_TO_WAIT;
-    public static final int MINSIZEDESTINATION = 14000;
-    public static final int MAXSIZEDESTINATION = 30000;
-    public static final int TIME_TO_WAIT = 25000;
+
+    private final int MINSIZEDESTINATION = 14000;
+    private final int MAXSIZEDESTINATION = 30000;
+    private final int TIME_TO_WAIT = 25000;
+    private long timeremaining = TIME_TO_WAIT;
     private Bitmap fakeBitmap = Bitmap.createBitmap(640, 480, Bitmap.Config.ARGB_8888);
     public DetectReader(RobotNavigator nav) {
         this.navigator = nav;
-        this.redlineDetection = new RedlineDetection(this.navigator, this);
+        this.redlineDetection = new RedlineDetection(this.navigator);
     }
 
-    Runnable scanTimer = new Runnable() {
-        @Override
-        public void run() {
-            LOGGER.i("Executing scan routine.");
-            timeremaining = TIME_TO_WAIT;
-            navigator.scan();
-            STRAT = SCAN;
-            restartScanRoutine(TIME_TO_WAIT);
-        }
-    };
-
-    public static Handler myHandler = new Handler();
-
-
-    public long startScanRoutine(long waitTime) {
-        myHandler.postDelayed(scanTimer, waitTime);
-        LOGGER.i("Starting scan routine.");
-        LOGGER.i("Waittime: " + waitTime);
-        this.startTime = System.currentTimeMillis();
-        return System.currentTimeMillis();
-    }
-
-    public long stopScanRoutine() {
-        myHandler.removeCallbacks(scanTimer);
-        LOGGER.i("Stopping scan routine.");
-        this.timeremaining = this.timeremaining-(System.currentTimeMillis()-startTime);
-        return timeremaining;
-    }
-
-    public void restartScanRoutine(int time) {
-        myHandler.removeCallbacks(scanTimer);
-        myHandler.postDelayed(scanTimer, time);
-
-    }
-    // circle detection
+    // Tensor detection for Circle
     public void stratChooserTensor(Classifier.Recognition o) {
-        switch(STRAT) {
+        switch(Strategy) {
             case SCAN:
-                if(decideStrategy(o.getLocation())) {
-                    STRAT = GOTOCIRCLE;
+                if(tensorStrategy(o.getLocation())) {
+                    this.Strategy = GOTOCIRCLE;
                 }
                 break;
-            case GOTOCIRCLE: decideStrategy(o.getLocation());
+            case GOTOCIRCLE: this.ObjectFound = this.tensorStrategy(o.getLocation());
             break;
             case DESTINATIONREACHED:
             break;
             case TESTMODE: //Do nothing
         }
-        if(STRAT == GOTOCIRCLE) {
+        if(Strategy == GOTOCIRCLE) {
             sizeRect = ((int)(o.getLocation().width() * o.getLocation().height()));
         }
     }
     // redline detection
     public Bitmap stratChooserRedline(Bitmap bm) {
-        switch(STRAT) {
+        switch(Strategy) {
             case SCAN:
-                LOGGER.i("IS alive: " + navigator.scanThread.isAlive());
                 if(!navigator.scanThread.isAlive()) {
-                    STRAT = GOTOCIRCLE;
+                    this.Strategy = GOTOCIRCLE;
                 }
                 break;
             case AVOID:
-                if(!redlineDetection.checkRed(bm)) {
-                    this.STRAT = this.GOTOCIRCLE;
+                if(!redlineDetection.checkRedDuringAvoid(bm)) {
+                    this.Strategy = this.GOTOCIRCLE;
                     this.navigator.resume();
-                    startScanRoutine(this.timeremaining);
+                    this.startScanRoutine(this.timeremaining);
                 }
-            break;
-            case GOTOCIRCLE: return this.redlineDetection.processImage(bm);
+                return this.redlineDetection.bitmapResult;
+            case GOTOCIRCLE:
+                this.redlineDetection.processImage(bm);
+                // >= 0 redline left or right
+                if(this.redlineDetection.Avoid >= 0) {
+                    this.Strategy = AVOID;
+                    this.stopScanRoutine();
+                }
+                return this.redlineDetection.bitmapResult;
             case DESTINATIONREACHED: return fakeBitmap;
         }
         return fakeBitmap;
     }
     // TensorFlow Strategy
-    public boolean decideStrategy(RectF pos) {
+    public boolean tensorStrategy(RectF pos) {
         boolean goodObject = false;
         // navigate to circle
         float rectSize = pos.width() * pos.height();
@@ -119,39 +91,39 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
             if(rectSize < MINSIZEDESTINATION) {
                 // go left when circle is on the left side of the frame
                 if(pos.centerX() < 105) {
-                    navigator.left();
+                    this.navigator.left();
                     goodObject = true;
                 }
                 // go right..
                 if(pos.centerX() > 195) {
-                    navigator.right();
+                    this.navigator.right();
                     goodObject = true;
                 }
                 // stay mid
                 if(pos.centerX() >= 105 && pos.centerX() <= 195) {
-                    navigator.forward();
+                    this.navigator.forward();
                     goodObject = true;
                 }
             }
             // filter out big faulty detected Objects
             // destination is reached when 3 objects of the size between MINSIZEDESTINATION and MAXSIZEDESTINATION pixels are detected within 1.5 seconds (see Checkresult class)
             if(rectSize > MINSIZEDESTINATION && rectSize < MAXSIZEDESTINATION) {
-                if(cr == null) {
-                    cr = new Checkresult();
-                    cr.check();
+                if(this.cr == null) {
+                    this.cr = new Checkresult();
+                    this.cr.check();
                 } else {
-                    int res = cr.check();
+                    int res = this.cr.check();
                     if(res == 0) {
                         cr = new Checkresult();
                     }
                     if(res == 1) {
-                        LOGGER.i("We reached our destination.");
-                        STRAT = DESTINATIONREACHED;
-                        stopScanRoutine();
+                        this.LOGGER.i("We reached our destination.");
+                        this.Strategy = DESTINATIONREACHED;
+                        this.stopScanRoutine();
                         this.navigator.lastForwardToDestination();
                     }
                     if(res == 2) {
-                        LOGGER.i("Not enough results yet.");
+                        this.LOGGER.i("Not enough results yet.");
                     }
                 }
             }
@@ -162,7 +134,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
     @Override
     public void onClick(View view) {
         switch(view.getId()) {
-            case R.id.bntReset: STRAT = GOTOCIRCLE; navigator.forward(); cr = null;
+            case R.id.bntReset: this.Strategy = GOTOCIRCLE; navigator.forward(); cr = null;
             LOGGER.i("RESET!!!");
             break;
         }
@@ -172,17 +144,51 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
         if(b) {
-            this.STRAT = GOTOCIRCLE;
+            this.Strategy = GOTOCIRCLE;
             this.navigator.scan();
             this.startScanRoutine(TIME_TO_WAIT);
-            cr = null;
-            LOGGER.i("MODE: " + this.STRAT);
+            this.cr = null;
+            this.LOGGER.i("MODE: " + this.Strategy);
         } else {
-            this.STRAT = TESTMODE;
+            this.Strategy = TESTMODE;
             this.stopScanRoutine();
             this.navigator.stop();
-            LOGGER.i("MODE: " + this.STRAT);
+            this.LOGGER.i("MODE: " + this.Strategy);
         }
+    }
+
+    Runnable scanTimer = new Runnable() {
+        @Override
+        public void run() {
+            LOGGER.i("Executing scan routine.");
+            timeremaining = TIME_TO_WAIT;
+            navigator.scan();
+            Strategy = SCAN;
+            restartScanRoutine(TIME_TO_WAIT);
+        }
+    };
+
+    public static Handler myHandler = new Handler();
+
+
+    public long startScanRoutine(long waitTime) {
+        this.myHandler.postDelayed(scanTimer, waitTime);
+        this.LOGGER.i("Starting scan routine.");
+        this.LOGGER.i("Waittime: " + waitTime);
+        this.startTime = System.currentTimeMillis();
+        return System.currentTimeMillis();
+    }
+
+    public long stopScanRoutine() {
+        this.myHandler.removeCallbacks(scanTimer);
+        this.LOGGER.i("Stopping scan routine.");
+        this.timeremaining = this.timeremaining-(System.currentTimeMillis()-startTime);
+        return timeremaining;
+    }
+
+    public void restartScanRoutine(int time) {
+        this.myHandler.removeCallbacks(scanTimer);
+        this.myHandler.postDelayed(scanTimer, time);
     }
     private class Checkresult {
         final long tStart = System.currentTimeMillis();

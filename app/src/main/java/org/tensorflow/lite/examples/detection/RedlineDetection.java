@@ -12,21 +12,22 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.examples.detection.env.Logger;
 
-import java.text.DecimalFormat;
+import java.util.ArrayList;
+
 // class for Redline detection
 public class RedlineDetection {
     private static final Logger LOGGER = new Logger();
-    private final double THRESHOLD  = 2.0;
+    private final double THRESHOLDREGIONS  = 2.0;
+    private final double THRESHOLDWIDE  = 0.01;
     private final int REDLINELEFT = 0;
     private final int REDLINERIGHT = 1;
-    private final int REDLINENOTFOUND = 2;
-    private DetectReader reader;
-    DecimalFormat df = new DecimalFormat("#.##");
-    Scalar scalarLow, scalarHigh;
-    Mat mat1, mat2;
-    RobotNavigator robotNavigator;
-    public RedlineDetection(RobotNavigator navigator, DetectReader reader) {
-        this.reader = reader;
+    private final int REDLINENOTFOUND = -1;
+    public int Avoid = -1;
+    public Bitmap bitmapResult = Bitmap.createBitmap(480, 640, Bitmap.Config.ARGB_8888);
+    private Scalar scalarLow, scalarHigh;
+    private Mat mat1, mat2;
+    private RobotNavigator robotNavigator;
+    public RedlineDetection(RobotNavigator navigator) {
         this.robotNavigator = navigator;
         OpenCVLoader.initDebug();
         // set red range
@@ -35,7 +36,8 @@ public class RedlineDetection {
         this.mat1 = new Mat(640,480, CvType.CV_16UC4);
         this.mat2 = new Mat(640,480, CvType.CV_16UC4);
     }
-    public Bitmap processImage(Bitmap bitmap) {
+    public void processImage(Bitmap bitmap) {
+        ArrayList ar = new ArrayList();
         Mat mat = new Mat();
         Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         // Convert bitmap to mat
@@ -49,22 +51,12 @@ public class RedlineDetection {
         // convert back to bnitmap for ImageView
         Bitmap result = Bitmap.createBitmap(mat2.width(), mat2.height(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat2, result);
-        // check for white pixels
-        checkRegions(mat2);
-        return result;
+        // check for white pixels and set outputs
+        this.Avoid = checkRegions(mat2);
+        this.bitmapResult = result;
     }
-    // return true when the camera detected red a the bottom of the screen.
-    public boolean checkRed(Bitmap bitmap) {
-        Mat mat = new Mat();
-        Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        Utils.bitmapToMat(bmp32, mat);
-        Imgproc.cvtColor(mat, mat1, Imgproc.COLOR_RGB2HSV);
-        Core.inRange(mat1, scalarLow, scalarHigh, mat2);
-        Core.rotate(mat2, mat2, 0);
-        Bitmap result = Bitmap.createBitmap(mat2.width(), mat2.height(), Bitmap.Config.ARGB_8888);
-        return checkFullwidth(mat2);
-    }
-    private void checkRegions(Mat mat) {
+
+    private int checkRegions(Mat mat) {
         // create two small regions
         Rect regionLeft = new Rect(0,440,240,200);
         Rect regionRight = new Rect(240,440,240,200);
@@ -78,20 +70,28 @@ public class RedlineDetection {
         double leftPercentage = ((double) pixelsLeft) / 48000 * 100;
         double rightPercentage = ((double) pixelsRight) / 48000 * 100;
         // navigate
-        if(leftPercentage > THRESHOLD && leftPercentage > rightPercentage) {
-
-            this.reader.STRAT = this.reader.AVOID;
+        if(leftPercentage > THRESHOLDREGIONS && leftPercentage > rightPercentage) {
             this.robotNavigator.rotateRightEndless();
-            LOGGER.i("Redline found RIGHT.");
-            this.reader.stopScanRoutine();
+            this.LOGGER.i("Redline found LEFT.");
+            return REDLINELEFT;
         }
-        if(rightPercentage > THRESHOLD && rightPercentage > leftPercentage) {
-            this.reader.STRAT = this.reader.AVOID;
+        if(rightPercentage > THRESHOLDREGIONS && rightPercentage > leftPercentage) {
             this.robotNavigator.rotateLeftEndless();
-            LOGGER.i("Redline found LEFT.");
-            this.reader.stopScanRoutine();
-
+            this.LOGGER.i("Redline found RIGHT.");
+            return REDLINERIGHT;
         }
+        return REDLINENOTFOUND;
+    }
+    // return true when the camera detected red a the bottom of the screen.
+    public boolean checkRedDuringAvoid(Bitmap bitmap) {
+        Mat mat = new Mat();
+        Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        Utils.bitmapToMat(bmp32, mat);
+        Imgproc.cvtColor(mat, mat1, Imgproc.COLOR_RGB2HSV);
+        Core.inRange(mat1, scalarLow, scalarHigh, mat2);
+        Core.rotate(mat2, mat2, 0);
+        this.bitmapResult = Bitmap.createBitmap(mat2.width(), mat2.height(), Bitmap.Config.ARGB_8888);
+        return checkFullwidth(mat2);
     }
     private boolean checkFullwidth(Mat mat) {
         // create two small regions
@@ -102,6 +102,7 @@ public class RedlineDetection {
         int pixels = Core.countNonZero(matm);
         // calc percentages
         double Percentage = ((double) pixels) / 96000 * 100;
-        return Percentage > THRESHOLD ? true : false;
+        // stop rotating when pixels percentage is below 0.01%
+        return Percentage > THRESHOLDWIDE ? true : false;
     }
 }

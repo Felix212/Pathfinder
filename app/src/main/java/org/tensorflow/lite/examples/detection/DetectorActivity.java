@@ -30,7 +30,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Size;
 import android.util.TypedValue;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
@@ -40,8 +39,6 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.opencv.android.OpenCVLoader;
 import org.tensorflow.lite.examples.detection.customview.OverlayView;
 import org.tensorflow.lite.examples.detection.customview.OverlayView.DrawCallback;
 import org.tensorflow.lite.examples.detection.env.BorderedText;
@@ -218,7 +215,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
             final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
             // run detect redline until destination is reached
-            if(detectReader.STRAT < DetectReader.DESTINATIONREACHED) {
+            if(detectReader.Strategy < detectReader.DESTINATIONREACHED) {
               detectred = Bitmap.createBitmap(detectReader.stratChooserRedline(rgbFrameBitmap));
             }
             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
@@ -267,7 +264,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     showInference(lastProcessingTimeMs + "ms");
                     // output redline image
                     iv.setImageBitmap(detectred);
-                    textViewObjectSize.setText("MODE:" + Integer.toString(detectReader.STRAT));
+                    textViewObjectSize.setText("MODE:" + detectReader.Strategy);
                   }
                 });
           }
