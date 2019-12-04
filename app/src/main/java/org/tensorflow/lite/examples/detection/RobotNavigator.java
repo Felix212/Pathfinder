@@ -22,10 +22,12 @@ public class RobotNavigator implements View.OnClickListener {
     private static int slowSpeed = 7;
     private static int turnvalue = 8;
     private RobotService robot = new RobotService();
-    private static boolean isRotating = false;
     private AtomicBoolean scanning = new AtomicBoolean(false);
     private MotorStateEvent ASTATE;
-    private Thread scanThread;
+    public Thread scanThread;
+    public int rotationDirection = -1;
+    public final int LASTLEFT = 0;
+    public final int LASTRIGHT = 1;
 
     public RobotNavigator() {
         connect();
@@ -85,13 +87,14 @@ public class RobotNavigator implements View.OnClickListener {
     private void waitCommand() {
         scanning.set(true);
         try {
-            Thread.sleep(300);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println(
                     "Thread was interrupted, Failed to complete operation");
         }
         while(robot.motorA.getState() == Motor.STATE_RUNNING && robot.motorB.getState() == Motor.STATE_RUNNING && scanning.get()) {
+            int lol = 0;
         }
         stop();
         try {
@@ -103,7 +106,11 @@ public class RobotNavigator implements View.OnClickListener {
         }
     }
 
-
+    public void resume() {
+        stop();
+        waitCommand();
+        forward();
+    }
 
     public void rotateLeft() {
         this.scanning.set(false);
@@ -112,7 +119,7 @@ public class RobotNavigator implements View.OnClickListener {
         waitCommand();
         robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 20), robot.motorB.run(-speed, 20));
         waitCommand();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 9), robot.motorB.run(-speed, 9));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 50), robot.motorB.run(-speed, 50));
         waitCommand();
     }
     public void rotateRight() {
@@ -122,8 +129,24 @@ public class RobotNavigator implements View.OnClickListener {
         waitCommand();
         robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 20), robot.motorB.run(-speed, 20));
         waitCommand();
-        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 9), robot.motorB.run(speed, 9));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-speed, 50), robot.motorB.run(speed, 50));
         waitCommand();
+    }
+    public void rotateRightEndless() {
+        this.scanning.set(false);
+        this.scanThread.interrupt();
+        rotationDirection = LASTRIGHT;
+        stop();
+        waitCommand();
+        robot.executeSyncTwoMotorTask(robot.motorA.run(-slowSpeed), robot.motorB.run(slowSpeed));
+    }
+    public void rotateLeftEndless() {
+        this.scanning.set(false);
+        this.scanThread.interrupt();
+        rotationDirection = LASTLEFT;
+        stop();
+        waitCommand();
+        robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed), robot.motorB.run(-slowSpeed));
     }
     public void lastForwardToDestination() {
         robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 400),robot.motorB.run(slowSpeed, 400));
@@ -137,13 +160,28 @@ public class RobotNavigator implements View.OnClickListener {
             @Override
             public void run() {
                 while(scanning.get()) {
-                    RobotNavigator.this.stop();
-                    robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 600), robot.motorB.run(-slowSpeed, 600));
-                    waitCommand();
-                    robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
-                    scanning.set(false);
+                    if(rotationDirection == LASTLEFT) {
+                        robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 600), robot.motorB.run(-slowSpeed, 600));
+                        waitCommand();
+                        robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
+                        scanning.set(false);
+                    }
+                    if(rotationDirection == LASTRIGHT) {
+                        robot.executeSyncTwoMotorTask(robot.motorA.run(-slowSpeed, 600), robot.motorB.run(slowSpeed, 600));
+                        waitCommand();
+                        robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
+                        scanning.set(false);
+                    }
+                    if(rotationDirection == -1) {
+                        robot.executeSyncTwoMotorTask(robot.motorA.run(slowSpeed, 600), robot.motorB.run(-slowSpeed, 600));
+                        waitCommand();
+                        robot.executeSyncTwoMotorTask(robot.motorA.run(speed),robot.motorB.run(speed));
+                        scanning.set(false);
+                    }
                 }
+
                 LOGGER.i("Finished Thread");
+
             }
         };
         this.scanThread = thread;
@@ -155,7 +193,7 @@ public class RobotNavigator implements View.OnClickListener {
         waitCommand();
     }
     private void rotateTest() {
-        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 100), robot.motorB.run(-speed, 100));
+        robot.executeSyncTwoMotorTask(robot.motorA.run(speed, 120), robot.motorB.run(-speed, 120));
         waitCommand();
     }
     private void shortLength() {

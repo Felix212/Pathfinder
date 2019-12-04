@@ -15,16 +15,21 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
     private static Checkresult cr;
     public RedlineDetection redlineDetection;
     public int sizeRect = 0;
-    private static final Logger LOGGER = new Logger();
+    private Logger LOGGER = new Logger();
     public static int STRAT = 3;
-    private static final int FINDCIRCLE = 0;
+    public static final int SCAN = -1;
+    public static final int AVOID = 0;
     public static final int GOTOCIRCLE = 1;
     public static final int DESTINATIONREACHED = 2;
     public static final int TESTMODE = 3;
-
+    public long startTime = 0;
+    public long endTime = 0;
+    public long elapsedTime = 0;
+    public long timeremaining = TIME_TO_WAIT;
     public static final int MINSIZEDESTINATION = 14000;
     public static final int MAXSIZEDESTINATION = 30000;
-    private static final int TIME_TO_WAIT = 35000;
+    public static final int TIME_TO_WAIT = 25000;
+    private Bitmap fakeBitmap = Bitmap.createBitmap(640, 480, Bitmap.Config.ARGB_8888);
     public DetectReader(RobotNavigator nav) {
         this.navigator = nav;
         this.redlineDetection = new RedlineDetection(this.navigator, this);
@@ -34,7 +39,9 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
         @Override
         public void run() {
             LOGGER.i("Executing scan routine.");
+            timeremaining = TIME_TO_WAIT;
             navigator.scan();
+            STRAT = SCAN;
             restartScanRoutine(TIME_TO_WAIT);
         }
     };
@@ -42,25 +49,34 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
     public static Handler myHandler = new Handler();
 
 
-    public void startScanRoutine() {
-        myHandler.postDelayed(scanTimer, TIME_TO_WAIT);
+    public long startScanRoutine(long waitTime) {
+        myHandler.postDelayed(scanTimer, waitTime);
         LOGGER.i("Starting scan routine.");
+        LOGGER.i("Waittime: " + waitTime);
+        this.startTime = System.currentTimeMillis();
+        return System.currentTimeMillis();
     }
 
-    public void stopScanRoutine() {
+    public long stopScanRoutine() {
         myHandler.removeCallbacks(scanTimer);
         LOGGER.i("Stopping scan routine.");
+        this.timeremaining = this.timeremaining-(System.currentTimeMillis()-startTime);
+        return timeremaining;
     }
 
     public void restartScanRoutine(int time) {
         myHandler.removeCallbacks(scanTimer);
         myHandler.postDelayed(scanTimer, time);
+
     }
     // circle detection
     public void stratChooserTensor(Classifier.Recognition o) {
         switch(STRAT) {
-            case FINDCIRCLE:
-            break;
+            case SCAN:
+                if(decideStrategy(o.getLocation())) {
+                    STRAT = GOTOCIRCLE;
+                }
+                break;
             case GOTOCIRCLE: decideStrategy(o.getLocation());
             break;
             case DESTINATIONREACHED:
@@ -74,13 +90,27 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
     // redline detection
     public Bitmap stratChooserRedline(Bitmap bm) {
         switch(STRAT) {
-            case GOTOCIRCLE: return redlineDetection.processImage(bm);
-            case DESTINATIONREACHED: return null;
+            case SCAN:
+                LOGGER.i("IS alive: " + navigator.scanThread.isAlive());
+                if(!navigator.scanThread.isAlive()) {
+                    STRAT = GOTOCIRCLE;
+                }
+                break;
+            case AVOID:
+                if(!redlineDetection.checkRed(bm)) {
+                    this.STRAT = this.GOTOCIRCLE;
+                    this.navigator.resume();
+                    startScanRoutine(this.timeremaining);
+                }
+            break;
+            case GOTOCIRCLE: return this.redlineDetection.processImage(bm);
+            case DESTINATIONREACHED: return fakeBitmap;
         }
-        return null;
+        return fakeBitmap;
     }
     // TensorFlow Strategy
-    public void decideStrategy(RectF pos) {
+    public boolean decideStrategy(RectF pos) {
+        boolean goodObject = false;
         // navigate to circle
         float rectSize = pos.width() * pos.height();
         //when destination is not reached yet
@@ -90,14 +120,17 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
                 // go left when circle is on the left side of the frame
                 if(pos.centerX() < 105) {
                     navigator.left();
+                    goodObject = true;
                 }
                 // go right..
                 if(pos.centerX() > 195) {
                     navigator.right();
+                    goodObject = true;
                 }
                 // stay mid
                 if(pos.centerX() >= 105 && pos.centerX() <= 195) {
                     navigator.forward();
+                    goodObject = true;
                 }
             }
             // filter out big faulty detected Objects
@@ -123,7 +156,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
                 }
             }
         }
-
+        return goodObject;
     }
 
     @Override
@@ -141,7 +174,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
         if(b) {
             this.STRAT = GOTOCIRCLE;
             this.navigator.scan();
-            this.startScanRoutine();
+            this.startScanRoutine(TIME_TO_WAIT);
             cr = null;
             LOGGER.i("MODE: " + this.STRAT);
         } else {

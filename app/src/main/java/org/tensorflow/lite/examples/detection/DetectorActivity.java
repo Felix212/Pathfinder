@@ -267,7 +267,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                     showInference(lastProcessingTimeMs + "ms");
                     // output redline image
                     iv.setImageBitmap(detectred);
-                    textViewObjectSize.setText("Obejectpixels:" + Integer.toString(detectReader.sizeRect));
+                    textViewObjectSize.setText("MODE:" + Integer.toString(detectReader.STRAT));
                   }
                 });
           }

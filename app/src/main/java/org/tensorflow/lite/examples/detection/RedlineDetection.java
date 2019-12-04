@@ -53,6 +53,17 @@ public class RedlineDetection {
         checkRegions(mat2);
         return result;
     }
+    // return true when the camera detected red a the bottom of the screen.
+    public boolean checkRed(Bitmap bitmap) {
+        Mat mat = new Mat();
+        Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        Utils.bitmapToMat(bmp32, mat);
+        Imgproc.cvtColor(mat, mat1, Imgproc.COLOR_RGB2HSV);
+        Core.inRange(mat1, scalarLow, scalarHigh, mat2);
+        Core.rotate(mat2, mat2, 0);
+        Bitmap result = Bitmap.createBitmap(mat2.width(), mat2.height(), Bitmap.Config.ARGB_8888);
+        return checkFullwidth(mat2);
+    }
     private void checkRegions(Mat mat) {
         // create two small regions
         Rect regionLeft = new Rect(0,440,240,200);
@@ -68,19 +79,29 @@ public class RedlineDetection {
         double rightPercentage = ((double) pixelsRight) / 48000 * 100;
         // navigate
         if(leftPercentage > THRESHOLD && leftPercentage > rightPercentage) {
+
+            this.reader.STRAT = this.reader.AVOID;
+            this.robotNavigator.rotateRightEndless();
             LOGGER.i("Redline found RIGHT.");
             this.reader.stopScanRoutine();
-            robotNavigator.rotateRight();
-            robotNavigator.forward();
-            this.reader.startScanRoutine();
         }
         if(rightPercentage > THRESHOLD && rightPercentage > leftPercentage) {
+            this.reader.STRAT = this.reader.AVOID;
+            this.robotNavigator.rotateLeftEndless();
             LOGGER.i("Redline found LEFT.");
             this.reader.stopScanRoutine();
-            robotNavigator.rotateLeft();
-            robotNavigator.forward();
-            this.reader.startScanRoutine();
 
         }
+    }
+    private boolean checkFullwidth(Mat mat) {
+        // create two small regions
+        Rect region = new Rect(0,440,480,200);
+        // create two mat of the regions
+        Mat matm = new Mat(mat, region);
+        // countNonZero returns all pixels which are not black
+        int pixels = Core.countNonZero(matm);
+        // calc percentages
+        double Percentage = ((double) pixels) / 96000 * 100;
+        return Percentage > THRESHOLD ? true : false;
     }
 }
