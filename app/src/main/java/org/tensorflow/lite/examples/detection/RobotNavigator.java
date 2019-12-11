@@ -16,7 +16,7 @@ import geist.re.mindlib.listeners.MotorStateListener;
 
 
 public class RobotNavigator implements View.OnClickListener {
-    private static final String ROBOT_NAME = "NXT";
+    private static final String ROBOT_NAME = "SpoReiJo";
     private int SPEED = 15;
     private int SLOWSPEED = 7;
     private int TURNVALUE = 8;
@@ -42,7 +42,7 @@ public class RobotNavigator implements View.OnClickListener {
     }
 
     // drive methods
-    public void forward(){
+    public void forward() {
         if(scanThread == null) {
             robot.executeSyncTwoMotorTask(robot.motorA.run(SPEED),robot.motorB.run(SPEED));
         } else {
@@ -86,7 +86,7 @@ public class RobotNavigator implements View.OnClickListener {
     private void waitCommand() {
         scanning.set(true);
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println(
@@ -96,7 +96,7 @@ public class RobotNavigator implements View.OnClickListener {
         }
         stop();
         try {
-            Thread.sleep(200);
+            Thread.sleep(400);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.out.println(

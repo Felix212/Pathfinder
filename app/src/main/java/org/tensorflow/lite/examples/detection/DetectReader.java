@@ -27,7 +27,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
 
     private final int MINSIZEDESTINATION = 14000;
     private final int MAXSIZEDESTINATION = 30000;
-    private final int TIME_TO_WAIT = 25000;
+    private final int TIME_TO_WAIT = 15000;
     private long timeremaining = TIME_TO_WAIT;
     private Bitmap fakeBitmap = Bitmap.createBitmap(640, 480, Bitmap.Config.ARGB_8888);
     public DetectReader(RobotNavigator nav) {
@@ -40,6 +40,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
         switch(Strategy) {
             case SCAN:
                 if(tensorStrategy(o.getLocation())) {
+                    LOGGER.i("Strat changed from scan to gotocircle");
                     this.Strategy = GOTOCIRCLE;
                 }
                 break;
@@ -162,8 +163,8 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
         public void run() {
             LOGGER.i("Executing scan routine.");
             timeremaining = TIME_TO_WAIT;
-            navigator.scan();
             Strategy = SCAN;
+            navigator.scan();
             restartScanRoutine(TIME_TO_WAIT);
         }
     };
