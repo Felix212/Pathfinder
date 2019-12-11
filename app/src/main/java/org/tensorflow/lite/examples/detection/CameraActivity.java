@@ -98,6 +98,7 @@ public abstract class CameraActivity extends AppCompatActivity
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
     getSupportActionBar().setDisplayShowTitleEnabled(false);
+    Soundcontrol sc = new Soundcontrol(this);
 
     if (hasPermission()) {
       setFragment();

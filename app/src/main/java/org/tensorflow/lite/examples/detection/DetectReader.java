@@ -1,4 +1,5 @@
 package org.tensorflow.lite.examples.detection;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Handler;
@@ -24,6 +25,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
     public final int TESTMODE = 3;
     private boolean ObjectFound = false;
     public long startTime = 0;
+    public Soundcontrol soundcontrol;
 
     private final int MINSIZEDESTINATION = 14000;
     private final int MAXSIZEDESTINATION = 30000;
@@ -121,6 +123,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
                         this.Strategy = DESTINATIONREACHED;
                         this.stopScanRoutine();
                         this.navigator.lastForwardToDestination();
+                        soundcontrol.play_reached_destiation();
                     }
                     if(res == 2) {
                         this.LOGGER.i("Not enough results yet.");
@@ -190,6 +193,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
         this.myHandler.removeCallbacks(scanTimer);
         this.myHandler.postDelayed(scanTimer, time);
     }
+
     private class Checkresult {
         final long tStart = System.currentTimeMillis();
         private int counter;
@@ -210,6 +214,10 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
             return 2;
         }
 
+    }
+
+    public void createSoundcontrol(Context cn){
+        soundcontrol = new Soundcontrol(cn);
     }
 }
 

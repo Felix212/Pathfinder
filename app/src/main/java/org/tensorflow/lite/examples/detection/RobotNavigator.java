@@ -16,7 +16,7 @@ import geist.re.mindlib.listeners.MotorStateListener;
 
 
 public class RobotNavigator implements View.OnClickListener {
-    private static final String ROBOT_NAME = "NXT";
+    private static final String ROBOT_NAME = "SpoReiJo";
     private int SPEED = 15;
     private int SLOWSPEED = 7;
     private int TURNVALUE = 8;
