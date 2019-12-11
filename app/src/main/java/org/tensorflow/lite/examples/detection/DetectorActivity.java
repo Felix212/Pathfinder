@@ -113,6 +113,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     //
     iv = findViewById(R.id.openCV);
     //iv.setRotation(90);
+
+      detectReader.createSoundcontrol(this);
   }
 
   @Override
