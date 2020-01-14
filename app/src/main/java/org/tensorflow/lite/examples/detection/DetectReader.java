@@ -152,6 +152,7 @@ public class DetectReader implements View.OnClickListener, CompoundButton.OnChec
             this.navigator.scan();
             this.startScanRoutine(TIME_TO_WAIT);
             this.cr = null;
+            this.soundcontrol.start_searching();
             this.LOGGER.i("MODE: " + this.Strategy);
         } else {
             this.Strategy = TESTMODE;

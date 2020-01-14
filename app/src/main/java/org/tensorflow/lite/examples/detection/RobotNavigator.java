@@ -22,7 +22,6 @@ public class RobotNavigator implements View.OnClickListener {
     private int TURNVALUE = 8;
     private RobotService robot = new RobotService();
     private AtomicBoolean scanning = new AtomicBoolean(false);
-    private MotorStateEvent ASTATE;
     public Thread scanThread;
     public int rotationDirection = -1;
     public final int LEFT = 0;
